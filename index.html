@@ -5,41 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AgroPico Demo</title>
 
-  <!-- Leaflet CSS sin integrity -->
+  <!-- Leaflet CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
   />
-
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
     }
-
     #map {
-      height: 400px !important;
+      height: 400px;
       width: 100%;
       margin-top: 20px;
-      border: 1px solid #ccc;
     }
-
-    label, input, textarea, button {
-      display: block;
-      margin-bottom: 10px;
+    form {
+      max-width: 600px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, textarea {
       width: 100%;
-      max-width: 500px;
+      margin-bottom: 10px;
+      padding: 6px;
+      box-sizing: border-box;
     }
-
-    textarea {
-      height: 60px;
-      resize: vertical;
-    }
-
     button {
-      width: auto;
-      padding: 8px 16px;
-      cursor: pointer;
+      padding: 8px 12px;
+      font-size: 16px;
     }
   </style>
 </head>
@@ -48,27 +43,29 @@
 
   <form>
     <h2>Formulario de Fumigación</h2>
-    <label>Fecha y hora de fumigación:</label>
-    <input type="datetime-local" name="fechaHora" />
+    <label for="fechaHora">Fecha y hora de fumigación:</label>
+    <input type="datetime-local" id="fechaHora" name="fechaHora" />
 
-    <label>Potrero y división donde se realizó:</label>
-    <input type="text" name="potrero" placeholder="Potrero" />
-    <input type="text" name="division" placeholder="División" />
+    <label for="potrero">Potrero:</label>
+    <input type="text" id="potrero" name="potrero" placeholder="Potrero" />
 
-    <label>Tipo de producto o químico aplicado:</label>
-    <input type="text" name="producto" />
+    <label for="division">División:</label>
+    <input type="text" id="division" name="division" placeholder="División" />
 
-    <label>Condiciones climáticas relevantes:</label>
-    <textarea name="condiciones"></textarea>
+    <label for="producto">Tipo de producto o químico aplicado:</label>
+    <input type="text" id="producto" name="producto" />
 
-    <label>Velocidad y dirección del viento:</label>
-    <input type="text" name="viento" />
+    <label for="condiciones">Condiciones climáticas relevantes:</label>
+    <textarea id="condiciones" name="condiciones"></textarea>
 
-    <label>Temperatura °C:</label>
-    <input type="number" name="temperatura" />
+    <label for="viento">Velocidad y dirección del viento:</label>
+    <input type="text" id="viento" name="viento" />
 
-    <label>Observaciones o incidencias:</label>
-    <textarea name="observaciones"></textarea>
+    <label for="temperatura">Temperatura °C:</label>
+    <input type="number" id="temperatura" name="temperatura" />
+
+    <label for="observaciones">Observaciones o incidencias:</label>
+    <textarea id="observaciones" name="observaciones"></textarea>
 
     <button type="submit">Enviar</button>
   </form>
@@ -76,7 +73,7 @@
   <h2>Mapa Satelital</h2>
   <div id="map"></div>
 
-  <!-- Leaflet JS sin integrity -->
+  <!-- Leaflet JS -->
   <script
     src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
   ></script>
