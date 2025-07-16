@@ -2,38 +2,81 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AgroPico Demo</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity="sha256-sA+9oMei+r7B2Fr2sy4EXEjPOMrJb07wpKa/Tm9ALtk="
+    crossorigin=""
+  />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h1>AgroPico</h1>
-  <p>Formulario de prueba para gestión agropecuaria.</p>
+  <h1>AgroPico Demo</h1>
 
   <form>
-    <label>Fecha y hora de fumigación:
-      <input type="datetime-local" />
-    </label><br /><br />
+    <h2>Formulario de Fumigación</h2>
+    <label>Fecha y hora de fumigación:</label><br />
+    <input type="datetime-local" name="fechaHora" /><br /><br />
 
-    <label>Potrero:
-      <input type="text" />
-    </label><br /><br />
+    <label>Potrero y división donde se realizó:</label><br />
+    <input type="text" name="potrero" placeholder="Potrero" />
+    <input type="text" name="division" placeholder="División" /><br /><br />
 
-    <label>División:
-      <input type="text" />
-    </label><br /><br />
+    <label>Tipo de producto o químico aplicado:</label><br />
+    <input type="text" name="producto" /><br /><br />
 
-    <label>Producto/químico:
-      <input type="text" />
-    </label><br /><br />
+    <label>Condiciones climáticas relevantes:</label><br />
+    <textarea name="condiciones"></textarea><br /><br />
 
-    <label>Observaciones:
-      <textarea></textarea>
-    </label><br /><br />
+    <label>Velocidad y dirección del viento:</label><br />
+    <input type="text" name="viento" /><br /><br />
 
-    <button type="submit">Guardar</button>
+    <label>Temperatura °C:</label><br />
+    <input type="number" name="temperatura" /><br /><br />
+
+    <label>Observaciones o incidencias:</label><br />
+    <textarea name="observaciones"></textarea><br /><br />
+
+    <button type="submit">Enviar</button>
   </form>
 
-  <script src="script.js"></script>
+  <h2>Mapa Satelital</h2>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+    integrity="sha256-nMNlpuaDPrql/nYYxV8z2fJZQ4LGj6pR3p1Rgi/tDZY="
+    crossorigin=""
+  ></script>
+
+  <script>
+    // Inicializar mapa centrado en La Pampa, Argentina
+    var map = L.map('map').setView([-38.0, -64.0], 6);
+
+    // Capa satelital ESRI
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {
+        attribution:
+          'Tiles © Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye',
+        maxZoom: 18,
+      }
+    ).addTo(map);
+  </script>
 </body>
 </html>
