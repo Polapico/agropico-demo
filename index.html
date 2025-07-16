@@ -2,30 +2,44 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AgroPico Demo</title>
 
-  <!-- Leaflet CSS --> 
- <link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-/>
-    integrity="sha256-sA+9oMei+r7B2Fr2sy4EXEjPOMrJb07wpKa/Tm9ALtk="
-    crossorigin=""
+  <!-- Leaflet CSS sin integrity -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
   />
-  <!-- Leaflet JS -->
-<script
-  src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js">
-</script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
     }
+
     #map {
-      height: 400px;
+      height: 400px !important;
       width: 100%;
       margin-top: 20px;
+      border: 1px solid #ccc;
+    }
+
+    label, input, textarea, button {
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    textarea {
+      height: 60px;
+      resize: vertical;
+    }
+
+    button {
+      width: auto;
+      padding: 8px 16px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -34,27 +48,27 @@
 
   <form>
     <h2>Formulario de Fumigación</h2>
-    <label>Fecha y hora de fumigación:</label><br />
-    <input type="datetime-local" name="fechaHora" /><br /><br />
+    <label>Fecha y hora de fumigación:</label>
+    <input type="datetime-local" name="fechaHora" />
 
-    <label>Potrero y división donde se realizó:</label><br />
+    <label>Potrero y división donde se realizó:</label>
     <input type="text" name="potrero" placeholder="Potrero" />
-    <input type="text" name="division" placeholder="División" /><br /><br />
+    <input type="text" name="division" placeholder="División" />
 
-    <label>Tipo de producto o químico aplicado:</label><br />
-    <input type="text" name="producto" /><br /><br />
+    <label>Tipo de producto o químico aplicado:</label>
+    <input type="text" name="producto" />
 
-    <label>Condiciones climáticas relevantes:</label><br />
-    <textarea name="condiciones"></textarea><br /><br />
+    <label>Condiciones climáticas relevantes:</label>
+    <textarea name="condiciones"></textarea>
 
-    <label>Velocidad y dirección del viento:</label><br />
-    <input type="text" name="viento" /><br /><br />
+    <label>Velocidad y dirección del viento:</label>
+    <input type="text" name="viento" />
 
-    <label>Temperatura °C:</label><br />
-    <input type="number" name="temperatura" /><br /><br />
+    <label>Temperatura °C:</label>
+    <input type="number" name="temperatura" />
 
-    <label>Observaciones o incidencias:</label><br />
-    <textarea name="observaciones"></textarea><br /><br />
+    <label>Observaciones o incidencias:</label>
+    <textarea name="observaciones"></textarea>
 
     <button type="submit">Enviar</button>
   </form>
@@ -62,16 +76,14 @@
   <h2>Mapa Satelital</h2>
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
+  <!-- Leaflet JS sin integrity -->
   <script
     src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-    integrity="sha256-nMNlpuaDPrql/nYYxV8z2fJZQ4LGj6pR3p1Rgi/tDZY="
-    crossorigin=""
   ></script>
 
   <script>
     // Inicializar mapa centrado en La Pampa, Argentina
-    var map = L.map('map').setView([-38.0, -64.0], 6);
+    var map = L.map('map').setView([-38.0, -64.0], 7);
 
     // Capa satelital ESRI
     L.tileLayer(
