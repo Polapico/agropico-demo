@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Formulario de Fumigación - Claudio Test</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #map { height: 400px; width:100%; margin-top:20px; }
+    form { max-width:700px; }
+    label { font-weight:bold; }
+    input, textarea { width:100%; padding:6px; margin-bottom:10px; }
+    button { padding:10px;background:#2e6c3e;color:#fff;border:none;cursor:pointer; }
+    table { width:100%; margin-top:20px; border-collapse:collapse; }
+    th, td { padding:8px;border:1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>Formulario de Fumigación - Claudio Test</h1>
+
+  <form id="fumigacionForm">
+    <label>Fecha y hora:</label>
+    <input type="datetime-local" name="fechaHora" required />
+
+    <label>Potrero:</label><input type="text" name="potrero" />
+
+    <label>División:</label><input type="text" name="division" />
+
+    <label>Producto:</label><input type="text" name="producto" />
+
+    <label>Cantidad aplicada (litros/kg):</label><input type="number" name="cantidad" step="0.01"/>
+
+    <label>Clima:</label><textarea name="condiciones"></textarea>
+
+    <label>Viento:</label><input type="text" name="viento" />
+
+    <label>Temperatura:</label><input type="number" name="temperatura" />
+
+    <label>Observaciones:</label><textarea name="observaciones"></textarea>
+
+    <button type="submit">Guardar</button>
+  </form>
+
+  <h2>Ingresos guardados</h2>
+  <table id="tablaDatos">
+    <thead>
+      <tr>
+        <th>Fecha y hora</th><th>Potrero</th><th>División</th><th>Producto</th>
+        <th>Cantidad</th><th>Clima</th><th>Viento</th><th>Temp</th><th>Obs.</th>
+      </tr>
+    </thead><tbody></tbody>
+  </table>
+
+  <h2>Mapa Satelital - La Pampa</h2>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([-36.6167, -64.2833], 9);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18}).addTo(map);
+
+    const form = document.getElementById("fumigacionForm");
+    const tabla = document.querySelector("#tablaDatos tbody");
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const row = document.createElement("tr");
+      [...data.values()].forEach(val => {
+        const td = document.createElement("td");
+        td.textContent = val;
+        row.appendChild(td);
+      });
+      tabla.appendChild(row);
+      form.reset();
+    });
+  </script>
+</body>
+</html>
