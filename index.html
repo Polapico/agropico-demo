@@ -2,41 +2,29 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AgroPico – Fumigación & Mapa NDVI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgroPico – Fumigación + Mapa en Tiempo Real</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
   <style>
     body {
       font-family: 'Open Sans', Arial, sans-serif;
       font-size: 14px;
       color: #333;
       margin: 20px;
-      background: #f4f7f6;
     }
-
     h1, h2 {
       font-weight: 600;
       color: #2c3e50;
     }
-
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 600px;
-      margin-bottom: 20px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-    }
-
     form label {
       font-size: 13px;
       font-weight: 600;
       display: block;
       margin-bottom: 4px;
     }
-
     input, textarea {
       font-size: 13px;
       padding: 6px 8px;
@@ -46,7 +34,6 @@
       border: 1px solid #ccc;
       border-radius: 3px;
     }
-
     button {
       font-size: 14px;
       background-color: #27ae60;
@@ -56,43 +43,21 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #219150;
     }
-
     #map {
       height: 500px;
-      width: 100%;
-      max-width: 900px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+      margin-top: 30px;
     }
-
     .layers-control {
-      background: white;
-      padding: 8px;
-      border-radius: 6px;
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      z-index: 1000;
-      font-size: 14px;
+      margin-top: 10px;
     }
-
     #weather {
-      margin-top: 20px;
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      max-width: 300px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-
-    #weather h2 {
-      margin-top: 0;
-      font-size: 16px;
-      font-weight: 600;
+      margin-top: 30px;
+      padding: 10px;
+      background: #f2f2f2;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -105,10 +70,10 @@
     <input type="datetime-local" name="fechaHora" required />
 
     <label>Potrero y división</label>
-    <input type="text" name="potrero" placeholder="Potrero" required />
-    <input type="text" name="division" placeholder="División" required />
+    <input type="text" name="potrero" required />
+    <input type="text" name="division" required />
 
-    <label>Cantidad de producto aplicado (L/Ha)</label>
+    <label>Cantidad de producto (L/Ha)</label>
     <input type="number" name="cantidad" step="0.1" required />
 
     <label>Tipo de producto</label>
@@ -129,7 +94,7 @@
     <button type="submit">Guardar Fumigación</button>
   </form>
 
-  <h2>Mapa Satelital con Capa NDVI</h2>
+  <h2>Mapa Satelital con NDVI y Clima</h2>
   <div id="map"></div>
   <div class="layers-control">
     <label><input type="checkbox" id="ndviToggle" /> Mostrar NDVI</label>
@@ -137,51 +102,65 @@
 
   <div id="weather">
     <h2>Clima actual – La Pampa</h2>
-    <div id="weatherInfo">Cargando datos...</div>
+    <div id="weatherInfo">Cargando datos del clima...</div>
   </div>
 
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Inicializa el mapa
-    const map = L.map('map').setView([-36.6167, -64.2833], 8);
+    // Iniciar el mapa
+    const map = L.map("map").setView([-36.6, -64.3], 7);
 
-    const esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'ESRI World Imagery'
+    // Capa satelital base
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      attribution: "Tiles © Esri",
+      maxZoom: 18,
     }).addTo(map);
 
-    const ndviLayer = L.tileLayer('https://tiles.openlandmap.org/ndvi/{z}/{x}/{y}.png', {
-      attribution: 'NDVI – OpenLandMap',
-      opacity: 0.6,
-      maxZoom: 18
+    // Capa NDVI (vegetación)
+    const ndviLayer = L.tileLayer.wms("https://services.sentinel-hub.com/ogc/wms/1cd9e2e4-f77b-4303-a2c5-69b1d38bb4e0", {
+      layers: "NDVI",
+      format: "image/png",
+      transparent: true,
+      attribution: "Sentinel Hub (demo)",
     });
 
-    document.getElementById('ndviToggle').addEventListener('change', function () {
+    // Mostrar u ocultar NDVI
+    document.getElementById("ndviToggle").addEventListener("change", function () {
       if (this.checked) {
-        map.addLayer(ndviLayer);
+        ndviLayer.addTo(map);
       } else {
         map.removeLayer(ndviLayer);
       }
     });
 
-    // Open-Meteo API para clima actual y lluvia
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=-36.6167&longitude=-64.2833&current_weather=true&hourly=rain&timezone=auto')
-      .then(res => res.json())
-      .then(data => {
-        const cw = data.current_weather;
-        const nextRain = data.hourly.time.find((t, i) => data.hourly.rain[i] > 0);
-        document.getElementById('weatherInfo').innerHTML = `
-          Temp: <strong>${cw.temperature} °C</strong><br>
-          Viento: ${cw.windspeed} km/h<br>
-          ${nextRain ? `🌧️ Próxima lluvia: ${nextRain}` : '☀️ Sin lluvias previstas'}
+    // Capa de nubes animadas (OpenWeatherMap)
+    const clouds = L.tileLayer("https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=YOUR_API_KEY", {
+      attribution: "OpenWeatherMap",
+      transparent: true
+    }).addTo(map); // opcional: activado por defecto
+
+    // Clima actual vía Open-Meteo
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=-36.6&longitude=-64.3&current=temperature_2m,precipitation,wind_speed_10m&timezone=auto")
+      .then((res) => res.json())
+      .then((data) => {
+        const weather = data.current;
+        document.getElementById("weatherInfo").innerHTML = `
+          <strong>🌡️ Temp:</strong> ${weather.temperature_2m}°C |
+          <strong>💨 Viento:</strong> ${weather.wind_speed_10m} km/h |
+          <strong>🌧️ Precipitación:</strong> ${weather.precipitation} mm
         `;
       });
 
-    // Guardar en localStorage (simple demo)
-    document.getElementById('fumigacionForm').addEventListener('submit', function (e) {
+    // Guardar formulario local
+    const form = document.getElementById("fumigacionForm");
+    form.addEventListener("submit", function (e) {
       e.preventDefault();
-      const datos = Object.fromEntries(new FormData(this).entries());
-      localStorage.setItem('fumigacion', JSON.stringify(datos));
-      alert('¡Fumigación registrada!');
-      this.reset();
+      const datos = new FormData(form);
+      const entrada = {};
+      datos.forEach((val, key) => entrada[key] = val);
+      localStorage.setItem("fumigacion_" + Date.now(), JSON.stringify(entrada));
+      alert("✅ Datos guardados en tu navegador.");
+      form.reset();
     });
   </script>
 </body>
