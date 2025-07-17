@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AgroPico – Registro de Insumos para Siembra</title>
+<style>
+  body {
+    font-family: 'Open Sans', Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+    margin: 20px;
+    background: #f9f9f9;
+  }
+  h1 {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+    background: white;
+    box-shadow: 0 0 6px rgb(0 0 0 / 0.1);
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    text-align: left;
+  }
+  th {
+    background-color: #27ae60;
+    color: white;
+  }
+  input[type="text"], input[type="number"], select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  button {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 10px;
+  }
+  button:hover {
+    background-color: #219150;
+  }
+  #btnAddRow {
+    margin-bottom: 20px;
+  }
+  .btnDelete {
+    background-color: #e74c3c;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .btnDelete:hover {
+    background-color: #c0392b;
+  }
+</style>
+</head>
+<body>
+
+<h1>AgroPico – Registro de Insumos para Siembra</h1>
+
+<form id="insumosForm">
+  <table id="insumosTable">
+    <thead>
+      <tr>
+        <th>Tipo de insumo</th>
+        <th>Marca</th>
+        <th>Cantidad</th>
+        <th>Unidad</th>
+        <th>Costo unitario</th>
+        <th>Costo total</th>
+        <th>Observaciones</th>
+        <th>Eliminar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Filas dinámicas aquí -->
+    </tbody>
+  </table>
+  <button type="button" id="btnAddRow">+ Agregar insumo</button>
+  <button type="submit">Guardar Registro</button>
+</form>
+
+<script>
+  const insumosTableBody = document.querySelector("#insumosTable tbody");
+  const btnAddRow = document.getElementById("btnAddRow");
+  const form = document.getElementById("insumosForm");
+
+  function crearFila(data = {}) {
+    const tr = document.createElement("tr");
+
+    // Tipo de insumo
+    const tdTipo = document.createElement("td");
+    const inputTipo = document.createElement("input");
+    inputTipo.type = "text";
+    inputTipo.name = "tipo";
+    inputTipo.value = data.tipo || "";
+    inputTipo.placeholder = "Ej: Semilla, fertilizante";
+    tdTipo.appendChild(inputTipo);
+    tr.appendChild(tdTipo);
+
+    // Marca
+    const tdMarca = document.createElement("td");
+    const inputMarca = document.createElement("input");
+    inputMarca.type = "text";
+    inputMarca.name = "marca";
+    inputMarca.value = data.marca || "";
+    inputMarca.placeholder = "Marca";
+    tdMarca.appendChild(inputMarca);
+    tr.appendChild(tdMarca);
+
+    // Cantidad
+    const tdCantidad = document.createElement("td");
+    const inputCantidad = document.createElement("input");
+    inputCantidad.type = "number";
+    inputCantidad.min = "0";
+    inputCantidad.step = "any";
+    inputCantidad.name = "cantidad";
+    inputCantidad.value = data.cantidad || "";
+    tdCantidad.appendChild(inputCantidad);
+    tr.appendChild(tdCantidad);
+
+    // Unidad
+    const tdUnidad = document.createElement("td");
+    const selectUnidad = document.createElement("select");
+    selectUnidad.name = "unidad";
+    ["kg", "litros", "bolsas", "unidades"].forEach(u => {
+      const option = document.createElement("option");
+      option.value = u;
+      option.textContent = u;
+      if (data.unidad === u) option.selected = true;
+      selectUnidad.appendChild(option);
+    });
+    tdUnidad.appendChild(selectUnidad);
+    tr.appendChild(tdUnidad);
+
+    // Costo unitario
+    const tdCostoUnit = document.createElement("td");
+    const inputCostoUnit = document.createElement("input");
+    inputCostoUnit.type = "number";
+    inputCostoUnit.min = "0";
+    inputCostoUnit.step = "any";
+    inputCostoUnit.name = "costoUnit";
+    inputCostoUnit.value = data.costoUnit || "";
+    tdCostoUnit.appendChild(inputCostoUnit);
+    tr.appendChild(tdCostoUnit);
+
+    // Costo total (calculado)
+    const tdCostoTotal = document.createElement("td");
+    tdCostoTotal.textContent = "0.00";
+    tr.appendChild(tdCostoTotal);
+
+    // Observaciones
+    const tdObs = document.createElement("td");
+    const inputObs = document.createElement("input");
+    inputObs.type = "text";
+    inputObs.name = "observaciones";
+    inputObs.value = data.observaciones || "";
+    inputObs.placeholder = "Opcional";
+    tdObs.appendChild(inputObs);
+    tr.appendChild(tdObs);
+
+    // Botón eliminar
+    const tdEliminar = document.createElement("td");
+    const btnEliminar = document.createElement("button");
+    btnEliminar.type = "button";
+    btnEliminar.textContent = "X";
+    btnEliminar.classList.add("btnDelete");
+    btnEliminar.onclick = () => {
+      tr.remove();
+      guardarDatos();
+    };
+    tdEliminar.appendChild(btnEliminar);
+    tr.appendChild(tdEliminar);
+
+    // Actualizar costo total al cambiar cantidad o costo unitario
+    function actualizarCosto() {
+      const cant = parseFloat(inputCantidad.value) || 0;
+      const costUnit = parseFloat(inputCostoUnit.value) || 0;
+      tdCostoTotal.textContent = (cant * costUnit).toFixed(2);
+      guardarDatos();
+    }
+    inputCantidad.addEventListener("input", actualizarCosto);
+    inputCostoUnit.addEventListener("input", actualizarCosto);
+
+    // Calcular inicial
+    actualizarCosto();
+
+    return tr;
+  }
+
+  function agregarFila(data) {
+    const fila = crearFila(data);
+    insumosTableBody.appendChild(fila);
+  }
+
+  btnAddRow.addEventListener("click", () => {
+    agregarFila();
+  });
+
+  function guardarDatos() {
+    const filas = [...insumosTableBody.querySelectorAll("tr")];
+    const datos = filas.map(tr => {
+      return {
+        tipo: tr.querySelector("input[name='tipo']").value,
+        marca: tr.querySelector("input[name='marca']").value,
+        cantidad: tr.querySelector("input[name='cantidad']").value,
+        unidad: tr.querySelector("select[name='unidad']").value,
+        costoUnit: tr.querySelector("input[name='costoUnit']").value,
+        observaciones: tr.querySelector("input[name='observaciones']").value,
+      };
+    });
+    localStorage.setItem("insumosAgroPico", JSON.stringify(datos));
+  }
+
+  function cargarDatos() {
+    const datos = JSON.parse(localStorage.getItem("insumosAgroPico"));
+    if (datos && Array.isArray(datos)) {
+      insumosTableBody.innerHTML = "";
+      datos.forEach(d => agregarFila(d));
+    } else {
+      // Al menos una fila vacía para empezar
+      agregarFila();
+    }
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    guardarDatos();
+    alert("Registro guardado en localStorage!");
+  });
+
+  // Carga inicial
+  cargarDatos();
+</script>
+
+</body>
+</html>
