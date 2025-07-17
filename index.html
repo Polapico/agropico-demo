@@ -1,289 +1,71 @@
-body {
-  font-family: 'Open Sans', Arial, sans-serif;
-  font-size: 14px;
-  color: #333;
-  margin: 20px;
-}
-
-h1, h2 {
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-form label {
-  font-size: 13px;
-  font-weight: 600;
-  display: block;
-  margin-bottom: 4px;
-}
-
-input, textarea, select {
-  font-size: 13px;
-  padding: 6px 8px;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-}
-
-button {
-  font-size: 14px;
-  background-color: #27ae60;
-  color: white;
-  padding: 8px 14px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #219150;
-}
-¿Querés que te arme el index completo con esto y las capas en el mapa ya?
-O preferís ir paso a paso y primero te paso solo el CSS para que lo pruebes?
-
-
-
-Tú dijiste:
-pasa todo junto y lo subimos de una
-
-ChatGPT Plus
-¡Claro, Pola! Aquí te dejo el código completo, listo para subir y probar. Incluye:
-
-Formulario compacto y elegante con letra pequeña.
-
-Mapa Leaflet centrado en La Pampa.
-
-Capa base ESRI satelital.
-
-Capa NDVI gratis vía WMS (sentinel-hub demo).
-
-Capa clima y lluvia en tiempo real con Open-Meteo.
-
-Control para activar/desactivar capas.
-
-Guardado local (localStorage) para los datos del formulario (simple).
-
-html
-Copiar
-Editar
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AgroPico Demo - Fumigación y Mapas</title>
-
-  <!-- Google Fonts: Open Sans -->
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet" />
-
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-    crossorigin=""
-  />
-
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>AgroPico – Mapa con NDVI y Clima</title>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <style>
-    body {
-      font-family: 'Open Sans', Arial, sans-serif;
-      font-size: 14px;
-      color: #333;
-      margin: 20px;
-      background: #f9f9f9;
-    }
-
-    h1, h2 {
-      font-weight: 600;
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
-
-    form {
-      background: white;
-      padding: 15px 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.1);
-      max-width: 600px;
-    }
-
-    form label {
-      font-size: 13px;
-      font-weight: 600;
-      display: block;
-      margin-bottom: 4px;
-      margin-top: 10px;
-    }
-
-    input, textarea, select {
-      font-size: 13px;
-      padding: 6px 8px;
-      width: 100%;
-      box-sizing: border-box;
-      margin-bottom: 6px;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      resize: vertical;
-    }
-
-    button {
-      font-size: 14px;
-      background-color: #27ae60;
-      color: white;
-      padding: 8px 14px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-
-    button:hover {
-      background-color: #219150;
-    }
-
-    #map {
-      height: 450px;
-      width: 100%;
-      max-width: 900px;
-      margin-top: 30px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.15);
-    }
-
-    /* Controles de capas */
-    .layers-control {
-      background: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.1);
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      z-index: 1000;
-      font-size: 14px;
-      color: #333;
-    }
-
-    .layers-control label {
-      display: block;
-      margin-bottom: 6px;
-      cursor: pointer;
-    }
+    body { font-family: 'Open Sans', Arial, sans-serif; font-size: 14px; margin: 20px; background: #f9f9f9; }
+    h1 { font-weight: 600; color: #2c3e50; }
+    #map { height: 500px; width: 100%; max-width: 900px; margin-top: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.15); }
+    .layers-control { background: white; padding: 8px; border-radius: 6px; position: absolute; top: 15px; right: 15px; z-index: 1000; font-size: 14px; }
+    .layers-control label { display: block; margin-bottom: 6px; }
+    #weather { margin-top: 15px; padding: 10px; background: white; border-radius: 8px; box-shadow: 0 0 6px rgba(0,0,0,0.1); max-width: 300px; }
+    #weather h2 { margin-top: 0; font-size: 16px; color: #2c3e50; font-weight: 600; }
   </style>
 </head>
 <body>
-
-  <h1>AgroPico - Fumigación y Monitoreo</h1>
-
-  <form id="fumigacionForm">
-    <h2>Formulario de Fumigación</h2>
-
-    <label for="fechaHora">Fecha y hora de fumigación:</label>
-    <input type="datetime-local" id="fechaHora" name="fechaHora" required />
-
-    <label>Potrero y división donde se realizó:</label>
-    <input type="text" id="potrero" name="potrero" placeholder="Potrero" required />
-    <input type="text" id="division" name="division" placeholder="División" required />
-
-    <label for="producto">Tipo de producto o químico aplicado:</label>
-    <input type="text" id="producto" name="producto" required />
-
-    <label for="cantidad">Cantidad (litros o kg):</label>
-    <input type="number" id="cantidad" name="cantidad" min="0" step="0.01" required />
-
-    <label for="condiciones">Condiciones climáticas relevantes:</label>
-    <textarea id="condiciones" name="condiciones" rows="2"></textarea>
-
-    <label for="viento">Velocidad y dirección del viento:</label>
-    <input type="text" id="viento" name="viento" placeholder="Ej: 10 km/h NE" />
-
-    <label for="temperatura">Temperatura °C:</label>
-    <input type="number" id="temperatura" name="temperatura" step="0.1" />
-
-    <label for="observaciones">Observaciones o incidencias:</label>
-    <textarea id="observaciones" name="observaciones" rows="3"></textarea>
-
-    <button type="submit">Guardar Datos</button>
-  </form>
+  <h1>Mapa Satelital con NDVI y Clima</h1>
 
   <div id="map"></div>
-
-  <div class="layers-control" id="layerControls">
-    <strong>Capas del mapa:</strong>
-    <label><input type="checkbox" id="ndviLayer" /> Mostrar NDVI</label>
-    <label><input type="checkbox" id="climaLayer" checked disabled /> Clima y lluvia (base)</label>
+  <div class="layers-control">
+    <label><input type="checkbox" id="ndviToggle"> Mostrar capa NDVI</label>
   </div>
 
-  <!-- Leaflet JS -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
-    crossorigin=""
-  ></script>
+  <div id="weather">
+    <h2>Clima actual y lluvias</h2>
+    <div id="weatherInfo">Cargando...</div>
+  </div>
 
   <script>
-    // Iniciar mapa centrado en La Pampa, Argentina
-    var map = L.map('map').setView([-38.0, -64.0], 7);
+    // Iniciar mapa
+    const map = L.map('map').setView([-36.6167, -64.2833], 9);
 
-    // Capa base ESRI satelital
-    var baseLayer = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution: 'Tiles © Esri'
-      }
-    ).addTo(map);
+    // Capa base satelital (ESRI)
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles © Esri'
+    }).addTo(map);
 
-    // Capa NDVI vía WMS Sentinel-2 (demo, puede tardar en cargar)
-    var ndviLayer = L.tileLayer.wms('https://services.sentinel-hub.com/ogc/wms/your-demo-instance', {
-      layers: 'NDVI',
-      format: 'image/png',
-      transparent: true,
-      attribution: 'Sentinel-2 NDVI demo'
+    // Capa NDVI gratuita (OpenLandMap)
+    const ndviLayer = L.tileLayer('https://tiles.openlandmap.org/ndvi/{z}/{x}/{y}.png', {
+      attribution: 'NDVI - OpenLandMap',
+      opacity: 0.6,
+      maxZoom: 18
     });
 
-    // Para demo usar una capa NDVI pública más simple (OpenLandMap)
-    var ndviDemo = L.tileLayer('https://tiles.openlandmap.org/ndvi/{z}/{x}/{y}.png', {
-      attribution: 'NDVI - OpenLandMap'
+    document.getElementById('ndviToggle').addEventListener('change', function(){
+      if(this.checked) map.addLayer(ndviLayer);
+      else map.removeLayer(ndviLayer);
     });
 
-    // Capa clima y lluvia con Open-Meteo (preparada en API, pero aquí solo marcador)
-    // Como ejemplo: añadir capa WMS lluvia no trivial - para demo se deja fuera o añadir marcador
-
-    // Control capas NDVI
-    var ndviCheckbox = document.getElementById('ndviLayer');
-    ndviCheckbox.addEventListener('change', function () {
-      if (this.checked) {
-        ndviDemo.addTo(map);
-      } else {
-        map.removeLayer(ndviDemo);
-      }
-    });
-
-    // Guardar datos localmente
-    var form = document.getElementById('fumigacionForm');
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var data = {
-        fechaHora: form.fechaHora.value,
-        potrero: form.potrero.value,
-        division: form.division.value,
-        producto: form.producto.value,
-        cantidad: form.cantidad.value,
-        condiciones: form.condiciones.value,
-        viento: form.viento.value,
-        temperatura: form.temperatura.value,
-        observaciones: form.observaciones.value
-      };
-
-      // Guardar en localStorage
-      var registros = JSON.parse(localStorage.getItem('fumigaciones')) || [];
-      registros.push(data);
-      localStorage.setItem('fumigaciones', JSON.stringify(registros));
-
-      alert('Datos guardados localmente. Gracias, Claudio!');
-      form.reset();
-    });
-
+    // Función para mostrar clima/lluvias
+    const weatherDiv = document.getElementById('weatherInfo');
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=-36.6167&longitude=-64.2833&current_weather=true&hourly=rain&timezone=auto')
+      .then(res => res.json())
+      .then(data => {
+        const cw = data.current_weather;
+        const nextRain = data.hourly.time.find((t,i) => data.hourly.rain[i] > 0);
+        weatherDiv.innerHTML = `
+          <strong>${cw.temperature} °C</strong>,
+          viento ${cw.windspeed} km/h<br>
+          <em>${cw.weathercode}</em><br>
+          ${nextRain ? `Próxima lluvia: ${nextRain}` : 'Sin lluvia prevista hoy'}
+        `;
+      })
+      .catch(() => { weatherDiv.textContent = 'Error al cargar clima'; });
   </script>
 </body>
 </html>
